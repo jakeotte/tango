@@ -2,12 +2,9 @@ import argparse
 import requests
 import ipaddress
 from time import sleep
-from lxml.html import fromstring
 import random
-import bs4
 from colorama import Fore
 from colorama import Style
-from colorama import init as colorama_init
 from multiprocessing import Pool
 import warnings
 warnings.filterwarnings("ignore")
@@ -81,7 +78,7 @@ def getTargetList():
             for ip in ips:
                 for port in ports:
                     targets.append(f"{ip}:{port}")
-        debug(f"{Style.BRIGHT}{Fore.MAGENTA}[*]{Style.RESET_ALL} Loaded {len(ranges)} subnets from {args.rf}.")
+        debug(f"[?] Loaded {len(ranges)} subnets from {args.rf}.")
 
 
     ### File with raw targets
