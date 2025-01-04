@@ -69,11 +69,11 @@ async def run_ldaps_withEPA(inputUser, inputPassword, dcTarget, fqdn, timeout):
         elif "data 52e" in str(err):
             return False
         elif err is not None:
-            print("ERROR while connecting to " + dcTarget + ": " + str(err))
+            pass
         elif err is None:
             return False
     except Exception as e:
-        print("something went wrong during ldaps_withEPA bind:" + str(e))
+        pass
 
 
 #DNS query of an SRV record that should return
@@ -175,17 +175,13 @@ def do_check(dc, domain):
             ldapsChannelBindingAlwaysCheck = run_ldaps_noEPA(username, password, dc)
             ldapsChannelBindingWhenSupportedCheck = asyncio.run(run_ldaps_withEPA(username, password, dc, fqdn, 10))
             if ldapsChannelBindingAlwaysCheck == False and ldapsChannelBindingWhenSupportedCheck == True:
-                print("      [-] (LDAPS) channel binding is set to \"when supported\" - this")
-                print("                  may prevent an NTLM relay depending on the client's")
-                print("                  support for channel binding.")
+                return "SUPPORTED"
             elif ldapsChannelBindingAlwaysCheck == False and ldapsChannelBindingWhenSupportedCheck == False:
-                    print("      [+] (LDAPS) CHANNEL BINDING SET TO \"NEVER\"! PARTY TIME!")
+                return "NEVER"
             elif ldapsChannelBindingAlwaysCheck == True:
-                print("      [-] (LDAPS) channel binding set to \"required\", no fun allowed")
+                return "REQUIRED"
             else:
-                print("\nSomething went wrong...")
-                print("For troubleshooting:\nldapsChannelBindingAlwaysCheck - " +str(ldapsChannelBindingAlwaysCheck)+"\nldapsChannelBindingWhenSupportedCheck: "+str(ldapsChannelBindingWhenSupportedCheck))
-                exit()
+                return "ERROR"
             #print("For troubleshooting:\nldapsChannelBindingAlwaysCheck - " +str(ldapsChannelBindingAlwaysCheck)+"\nldapsChannelBindingWhenSupportedCheck: "+str(ldapsChannelBindingWhenSupportedCheck))
                 
         elif DoesLdapsCompleteHandshake(dc) == False:
