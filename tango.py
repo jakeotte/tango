@@ -59,7 +59,8 @@ settings_blob = f"""{Style.BRIGHT}{Fore.MAGENTA}[*]{Style.RESET_ALL} Scan settin
 - Thread count : {args.t}
 >> Press Enter to start scan..."""
 
-# getDomainControllers : Retrieve domain controllers via SRV record and attempt to verify via ICMP and SMB.
+# getDomainControllers : Retrieve domain controllers via SRV record,
+# verify alive status via ICMP and SMB ports, and finally check signing requirements.
 def getDomainControllers(domain):
     # Construct DNS resolver
     dns_resolver = dns.resolver.Resolver()
@@ -80,6 +81,7 @@ def getDomainControllers(domain):
                 print(f"{Fore.RED}    [X] ICMP : DEAD{Style.RESET_ALL}")
             # Check SMB
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(5)
             try:
                 result = sock.connect_ex((f"{host}",445))
                 if result == 0:
@@ -195,7 +197,7 @@ def scanNTLM(target):
         except:
             pass
         if "NTLM" in auth_header:
-            print(f"{Style.BRIGHT}{Fore.RED}[!] {target}{uri} - NTLM AUTHENTICATION ENABLED ({target}){Style.RESET_ALL}")
+            print(f"{Style.BRIGHT}{Fore.RED}    [!] NTLM AUTHENTICATION ENABLED: {Style.RESET_ALL}{target}{uri}{Style.RESET_ALL}")
 
 # Debug messages
 def debug(msg):
