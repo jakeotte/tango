@@ -156,10 +156,10 @@ def run_ldap(inputUser, inputPassword, dcTarget):
         if "stronger" in ldapConn_result_str:
             return True #because LDAP server signing requirements ARE enforced
         elif "data 52e" in ldapConn_result_str or "data 532" in ldapConn_result_str:
-            pass
+            print("[!!!] invalid credentials - aborting to prevent unnecessary authentication")
             exit()
         else:
-            pass
+            print("UNEXPECTED ERROR: " + ldapConn_result_str)
     else:
         #LDAPS bind successful
         return False #because LDAP server signing requirements are not enforced
