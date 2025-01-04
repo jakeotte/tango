@@ -28,8 +28,8 @@ def run_ldaps_noEPA(inputUser, inputPassword, dcTarget):
         ldapServer = ldap3.Server(
             dcTarget, use_ssl=True, port=636, get_info=ldap3.ALL, tls=tls)
         ldapConn = ldap3.Connection(
-            ldapServer, user=inputUser, password=inputPassword, authentication=ldap3.NTLM)
-        print("made it")
+            ldapServer, user=inputUser, password=inputPassword, authentication=ldap3.NTLM
+            )
         if not ldapConn.bind():
             if "data 80090346" in str(ldapConn.result):
                 return True #channel binding IS enforced
