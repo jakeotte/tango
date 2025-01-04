@@ -4,6 +4,7 @@ import ipaddress
 import ping3
 import socket
 import dns.resolver
+from src.ldapscan import *
 from colorama import Fore, Style
 from multiprocessing import Pool
 import warnings
@@ -64,29 +65,31 @@ def getDomainControllers(domain):
     dns_resolver = dns.resolver.Resolver()
     dns_resolver.nameservers = [args.ns] if args.ns else dns_resolver.nameservers[0]
     try:
-        print(f">>> Using DNS server {dns_resolver.nameservers[0]}")
+        print(f"{Style.BRIGHT}{Fore.MAGENTA}[*]{Style.RESET_ALL} Using DNS server {dns_resolver.nameservers[0]}")
         # Resolve LDAP server query
         result = dns_resolver.resolve(f'_ldap._tcp.dc._msdcs.{domain}', 'SRV', lifetime=10)
         for host in result.rrset:
             # Extract hostname
-            host = host.to_text().split(" ")[-1]
+            host = host.to_text().split(" ")[-1][:-1]
             print(f"{Style.BRIGHT}{host}{Style.RESET_ALL}")
             # Test ICMP
             r = ping3.ping(host)
             if r:
-                print(f"{Fore.GREEN}    [+] ICMP : TRUE{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}    [+] ICMP : ALIVE{Style.RESET_ALL}")
             else:
-                print(f"{Fore.RED}    [X] ICMP : FALSE{Style.RESET_ALL}")
+                print(f"{Fore.RED}    [X] ICMP : DEAD{Style.RESET_ALL}")
             # Check SMB
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 result = sock.connect_ex((f"{host}",445))
                 if result == 0:
-                    print(f"{Fore.GREEN}    [+] SMB : TRUE{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}    [+] SMB : ALIVE{Style.RESET_ALL}")
                 else:
-                    print(f"{Fore.RED}    [X] SMB : FALSE{Style.RESET_ALL}")
+                    print(f"{Fore.RED}    [X] SMB : DEAD{Style.RESET_ALL}")
             except:
-                print(f"{Fore.RED}    [X] SMB : FALSE{Style.RESET_ALL}")
+                print(f"{Fore.RED}    [X] SMB : DEAD{Style.RESET_ALL}")
+
+            do_check(host, domain)
 
 
 
@@ -157,11 +160,11 @@ def scanSingle(target):
 
     except requests.exceptions.SSLError:
         # HTTPS with additional SSL error
-        print(f"{Style.BRIGHT}{Fore.GREEN}[+]{Style.RESET_ALL} {target} is up but has an SSL error.")
+        print(f"{Style.BRIGHT}{Fore.YELLOW}[~]{Style.RESET_ALL} {target} is up but has an SSL error.")
 
     except requests.exceptions.ReadTimeout:
         # Timeouts
-        print(f"{Style.BRIGHT}{Fore.GREEN}[+]{Style.RESET_ALL} {target} timed out, but is likely up.")
+        print(f"{Style.BRIGHT}{Fore.YELLOW}[~]{Style.RESET_ALL} {target} timed out but is likely up.")
     
     except:
         debug(f"[x] {target}")
