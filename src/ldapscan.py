@@ -168,7 +168,7 @@ def run_ldap(inputUser, inputPassword, dcTarget):
 
 def do_check(dc, domain):
     username = "guest"
-    password = "guest"
+    password = "defaultpass"
     fqdn = domain.upper()
     username = fqdn + "\\" + username
     try:
