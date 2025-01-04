@@ -28,8 +28,8 @@ def run_ldaps_noEPA(inputUser, inputPassword, dcTarget):
         ldapServer = ldap3.Server(
             dcTarget, use_ssl=True, port=636, get_info=ldap3.ALL, tls=tls)
         ldapConn = ldap3.Connection(
-            ldapServer, user=inputUser, password=inputPassword, authentication=ldap3.NTLM)
-        print("made it")
+            ldapServer, user=inputUser, password=inputPassword, authentication=ldap3.NTLM
+            )
         if not ldapConn.bind():
             if "data 80090346" in str(ldapConn.result):
                 return True #channel binding IS enforced
@@ -179,13 +179,17 @@ def do_check(dc, domain):
                 print("      [-] (LDAPS) channel binding is set to \"when supported\" - this")
                 print("                  may prevent an NTLM relay depending on the client's")
                 print("                  support for channel binding.")
+                return "SUPPORTED"
             elif ldapsChannelBindingAlwaysCheck == False and ldapsChannelBindingWhenSupportedCheck == False:
                     print("      [+] (LDAPS) CHANNEL BINDING SET TO \"NEVER\"! PARTY TIME!")
+                    return "NEVER"
             elif ldapsChannelBindingAlwaysCheck == True:
                 print("      [-] (LDAPS) channel binding set to \"required\", no fun allowed")
+                return "REQUIRED"
             else:
                 print("\nSomething went wrong...")
                 print("For troubleshooting:\nldapsChannelBindingAlwaysCheck - " +str(ldapsChannelBindingAlwaysCheck)+"\nldapsChannelBindingWhenSupportedCheck: "+str(ldapsChannelBindingWhenSupportedCheck))
+                return "ERROR"
                 exit()
             #print("For troubleshooting:\nldapsChannelBindingAlwaysCheck - " +str(ldapsChannelBindingAlwaysCheck)+"\nldapsChannelBindingWhenSupportedCheck: "+str(ldapsChannelBindingWhenSupportedCheck))
                 
