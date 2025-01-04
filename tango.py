@@ -89,7 +89,17 @@ def getDomainControllers(domain):
             except:
                 print(f"{Fore.RED}    [X] SMB : DEAD{Style.RESET_ALL}")
 
-            do_check(host, domain)
+            match do_check(host, domain):
+                case "NEVER":
+                    print(f"{Fore.GREEN}    [+] LDAPS BINDING : NEVER{Style.RESET_ALL}")
+                case "SUPPORTED":
+                    print(f"{Fore.YELLOW}    [~] LDAPS BINDING : WHEN SUPPORTED{Style.RESET_ALL}")
+                case "REQUIRED":
+                    print(f"{Fore.RED}    [X] LDAPS BINDING : REQUIRED{Style.RESET_ALL}")
+                case _:
+                    print(f"{Fore.RED}    [X] LDAPS BINDING : ERROR{Style.RESET_ALL}")
+    
+
 
 
 
