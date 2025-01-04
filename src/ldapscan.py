@@ -70,7 +70,7 @@ async def run_ldaps_withEPA(inputUser, inputPassword, dcTarget, fqdn, timeout):
         elif "data 52e" in str(err):
             return False
         elif err is not None:
-            print("ERROR while connecting to " + dcTarget + ": " + err)
+            print("ERROR while connecting to " + dcTarget + ": " + str(err))
         elif err is None:
             return False
     except Exception as e:
