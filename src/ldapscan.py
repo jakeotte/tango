@@ -159,7 +159,7 @@ def run_ldap(inputUser, inputPassword, dcTarget):
             print("[!!!] invalid credentials - aborting to prevent unnecessary authentication")
             exit()
         else:
-            print("UNEXPECTED ERROR: " + ldapConn_result_str)
+            print("run_ldap UNEXPECTED ERROR: " + ldapConn_result_str)
     else:
         #LDAPS bind successful
         return False #because LDAP server signing requirements are not enforced
