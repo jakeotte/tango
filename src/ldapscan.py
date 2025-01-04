@@ -28,7 +28,8 @@ def run_ldaps_noEPA(inputUser, inputPassword, dcTarget):
         ldapServer = ldap3.Server(
             dcTarget, use_ssl=True, port=636, get_info=ldap3.ALL, tls=tls)
         ldapConn = ldap3.Connection(
-            ldapServer, user=inputUser, password=inputPassword, authentication=ldap3.NTLM)
+            ldapServer, user=inputUser, password=inputPassword, authentication=ldap3.NTLM
+            )
         
         if not ldapConn.bind():
             if "data 80090346" in str(ldapConn.result):
@@ -168,7 +169,7 @@ def run_ldap(inputUser, inputPassword, dcTarget):
 
 def do_check(dc, domain):
     username = "guest"
-    password = "defaultpass"
+    password = ""
     fqdn = domain.upper()
     username = fqdn + "\\" + username
     try:
