@@ -1,10 +1,10 @@
 import argparse
 import requests
 import ipaddress
-from time import sleep
-import random
-from colorama import Fore
-from colorama import Style
+import ping3
+import socket
+import dns.resolver
+from colorama import Fore, Style
 from multiprocessing import Pool
 import warnings
 warnings.filterwarnings("ignore")
@@ -12,10 +12,10 @@ warnings.filterwarnings("ignore")
 
 ### Banner
 banner = f"""
-{Fore.BLUE}{Style.BRIGHT}*****************************************************************************{Style.RESET_ALL}{Fore.YELLOW}{Style.BRIGHT}
+{Fore.BLUE}{Style.BRIGHT}*****************************************************************************{Style.RESET_ALL}{Style.BRIGHT}
 
-TANGO TEMP SPLASH   
-                                  {Fore.WHITE}2ptr
+                     TANGO - Internal Network Recon
+                                  2ptr
 
 {Style.RESET_ALL}{Fore.BLUE}{Style.BRIGHT}*****************************************************************************{Style.RESET_ALL}"""
 
@@ -25,6 +25,8 @@ parser = argparse.ArgumentParser(
                     description='initial access for AD networks',
                     epilog='https://github.com/2ptr/tango')
 
+parser.add_argument('-d', help='Domain name (company.local).', metavar='company.local', required=True)
+parser.add_argument('-ns', help='DNS server IP address.')
 inputgroup = parser.add_argument_group('targets')
 inputgroup = inputgroup.add_mutually_exclusive_group(required=True)
 
@@ -36,27 +38,63 @@ inputgroup.add_argument('-tf', help='Newline-delimited single target file (10.10
 # Configurable options
 parser.add_argument('-p', help='Port list to test. Default is 80,443.', default='80,443', metavar='[ports]')
 parser.add_argument('-t', help='Number of threads. Default is 10.', default=10, type=int, metavar='[num]')
-parser.add_argument('-ua', help='User-agent for requests. Default is Windows/Mozilla.', default='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0', metavar='"Mozilla 1.x"')
-parser.add_argument('--random', help='Randomly select hosts from subnets.', action="store_true")
 
 # Other options
-parser.add_argument('-o', help='Output file for alive hosts. Defaults to web-hosts.txt.', type=str, default='web-hosts.txt',  metavar='web-hosts.txt')
+parser.add_argument('-o', help='Output file for alive hosts. Defaults to tango-out.txt.', type=str, default='tango-out.txt',  metavar='tango-out.txt')
 parser.add_argument('--debug', help='Show debug information.', action="store_true")
 
 args = parser.parse_args()
 ports = args.p.split(',')
 
 headers = {
-    "User-Agent" : args.ua
+    "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"
 }
 
 ### Settings banner
 settings_blob = f"""{Style.BRIGHT}{Fore.MAGENTA}[*]{Style.RESET_ALL} Scan settings:
+- Domain : {args.d}
+- DNS Server : {args.ns if args.ns else "Default"}
 - Ports : {args.p}
-- Target Selection : {'Random' if args.random else 'Sequential'}
 - Thread count : {args.t}
-- User-agent: {args.ua}
 >> Press Enter to start scan..."""
+
+# getDomainControllers : Retrieve domain controllers via SRV record and attempt to verify via ICMP and SMB.
+def getDomainControllers(domain):
+    # Construct DNS resolver
+    dns_resolver = dns.resolver.Resolver()
+    dns_resolver.nameservers = [args.ns] if args.ns else dns_resolver.nameservers[0]
+    try:
+        print(f">>> Using DNS server {dns_resolver.nameservers[0]}")
+        # Resolve LDAP server query
+        result = dns_resolver.resolve(f'_ldap._tcp.dc._msdcs.{domain}', 'SRV', lifetime=10)
+        for host in result.rrset:
+            # Extract hostname
+            host = host.to_text().split(" ")[-1]
+            print(f"{Style.BRIGHT}{host}{Style.RESET_ALL}")
+            # Test ICMP
+            r = ping3.ping(host)
+            if r:
+                print(f"{Fore.GREEN}    [+] ICMP : TRUE{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}    [X] ICMP : FALSE{Style.RESET_ALL}")
+            # Check SMB
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                result = sock.connect_ex((f"{host}",445))
+                if result == 0:
+                    print(f"{Fore.GREEN}    [+] SMB : TRUE{Style.RESET_ALL}")
+                else:
+                    print(f"{Fore.RED}    [X] SMB : FALSE{Style.RESET_ALL}")
+            except:
+                print(f"{Fore.RED}    [X] SMB : FALSE{Style.RESET_ALL}")
+
+
+
+    except dns.resolver.NXDOMAIN:
+        print(f"{Fore.RED}[X] DNS name does not exist. Skipping DC checks...{Style.RESET_ALL}")
+    except dns.resolver.LifetimeTimeout:
+        print(f"{Fore.RED}[X] DNS query timed out. Skipping DC checks...{Style.RESET_ALL}")
+
 
 # Construct a list of targets (IP:PORT) from CIDR ranges and target files.
 def getTargetList():
@@ -135,46 +173,20 @@ def scanSingle(target):
 # Scan a given IIS server for NTLM authentication endpoints - ADCS and SCCM.
 def scanNTLM(target):
     auth_header = ""
-    try:
-        response = requests.get(f"http://{target}/", headers=headers, timeout=1, verify=False)
-        auth_header = response.headers["WWW-Authenticate"]
-    except:
-        pass
-    try:
-        response = requests.get(f"https://{target}/", headers=headers, timeout=1, verify=False)
-        auth_header = response.headers["WWW-Authenticate"]
-    except:
-        pass
-    if "NTLM" in auth_header:
-        print(f"{Style.BRIGHT}{Fore.RED}[!] UNKNOWN - NTLM AUTHENTICATION ENABLED ({target}){Style.RESET_ALL}")
-    
-    auth_header = ""
-    try:
-        response = requests.get(f"http://{target}/certsrv/", timeout=1, headers=headers, verify=False)
-        auth_header = response.headers["WWW-Authenticate"]
-    except:
-        pass
-    try:
-        response = requests.get(f"https://{target}/certsrv/", timeout=1, headers=headers, verify=False)
-        auth_header = response.headers["WWW-Authenticate"]
-    except:
-        pass
-    if "NTLM" in auth_header:
-        print(f"{Style.BRIGHT}{Fore.RED}[!] ADCS - NTLM AUTHENTICATION ENABLED ({target}){Style.RESET_ALL}")
-
-    auth_header = ""
-    try:
-        response = requests.get(f"http://{target}/ccm_system_windowsauth/request", headers=headers, timeout=1, verify=False)
-        auth_header = response.headers["WWW-Authenticate"]
-    except:
-        pass
-    try:
-        response = requests.get(f"https://{target}/ccm_system_windowsauth/request", headers=headers, timeout=1, verify=False)
-        auth_header = response.headers["WWW-Authenticate"]
-    except:
-        pass
-    if "NTLM" in auth_header:
-        print(f"{Style.BRIGHT}{Fore.RED}[!] SCCM - NTLM AUTHENTICATION ENABLED ({target}){Style.RESET_ALL}")
+    for uri in ['/','/certsrv/','/ccm_system_windowsauth/request']:
+        debug(f"[?] Testing {target}{uri} for NTLM...")
+        try:
+            response = requests.get(f"http://{target}{uri}", headers=headers, timeout=1, verify=False)
+            auth_header = response.headers["WWW-Authenticate"]
+        except:
+            pass
+        try:
+            response = requests.get(f"https://{target}{uri}", headers=headers, timeout=1, verify=False)
+            auth_header = response.headers["WWW-Authenticate"]
+        except:
+            pass
+        if "NTLM" in auth_header:
+            print(f"{Style.BRIGHT}{Fore.RED}[!] {target}{uri} - NTLM AUTHENTICATION ENABLED ({target}){Style.RESET_ALL}")
 
 # Debug messages
 def debug(msg):
@@ -187,34 +199,19 @@ def main():
     print(settings_blob)
     input()
 
+    ### Domain Controllers
+    print(f"{Style.BRIGHT}{Fore.BLUE}***** {Fore.WHITE}Domain Controllers{Fore.BLUE} ****************************************************{Style.RESET_ALL}")
+    dcs = getDomainControllers(args.d)
+
     ### Generate target list from usage mode
+    print(f"{Style.BRIGHT}{Fore.BLUE}\n***** {Fore.WHITE}NTLM Relay Targets{Fore.BLUE} ****************************************************{Style.RESET_ALL}")
     targets = getTargetList()
     debug(f"[?] Targets: {targets}")
     print(f"{Style.BRIGHT}{Fore.MAGENTA}[*]{Style.RESET_ALL} Loaded {len(targets)} targets.")
     
     ### Scan targets
-    alive = []
-    scanned = []
-
-    # random scanning
-    if args.random:
-        target = random.choice(targets)
-        for i in targets:
-            while target in scanned:
-                target = random.choice(targets)
-
-            # Returns true if the target is alive.
-            if scanSingle(target):
-                alive += [target]
-            scanned += [target]
-
-            # Sleep and jitter
-            sleep(args.s)
-    
-    # non-random scanning
-    else:
-        with Pool(args.t) as p:
-            p.map(scanSingle, targets)
+    with Pool(args.t) as p:
+        p.map(scanSingle, targets)
 
     return
 

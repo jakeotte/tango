@@ -2,3 +2,5 @@ colorama
 lxml
 bs4
 requests
+dnspython
+ping3
