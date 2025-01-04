@@ -97,11 +97,7 @@ def getDomainControllers(domain):
                 case "REQUIRED":
                     print(f"{Fore.RED}    [X] LDAPS BINDING : REQUIRED{Style.RESET_ALL}")
                 case _:
-                    print(f"{Fore.RED}    [X] LDAPS BINDING : ERROR{Style.RESET_ALL}")
-    
-
-
-
+                    print(f"{Fore.RED}    [X] LDAPS BINDING : SCAN ERROR{Style.RESET_ALL}")
 
     except dns.resolver.NXDOMAIN:
         print(f"{Fore.RED}[X] DNS name does not exist. Skipping DC checks...{Style.RESET_ALL}")
