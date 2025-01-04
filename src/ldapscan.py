@@ -176,15 +176,22 @@ def do_check(dc, domain):
             ldapsChannelBindingAlwaysCheck = run_ldaps_noEPA(username, password, dc)
             ldapsChannelBindingWhenSupportedCheck = asyncio.run(run_ldaps_withEPA(username, password, dc, fqdn, 10))
             if ldapsChannelBindingAlwaysCheck == False and ldapsChannelBindingWhenSupportedCheck == True:
+                print("      [-] (LDAPS) channel binding is set to \"when supported\" - this")
+                print("                  may prevent an NTLM relay depending on the client's")
+                print("                  support for channel binding.")
                 return "SUPPORTED"
             elif ldapsChannelBindingAlwaysCheck == False and ldapsChannelBindingWhenSupportedCheck == False:
-                    return "NEVER"
+                print("never")
+                return "NEVER"
             elif ldapsChannelBindingAlwaysCheck == True:
+                print("      [-] (LDAPS) channel binding set to \"required\", no fun allowed")
                 return "REQUIRED"
             else:
+                print("\nSomething went wrong...")
+                print("For troubleshooting:\nldapsChannelBindingAlwaysCheck - " +str(ldapsChannelBindingAlwaysCheck)+"\nldapsChannelBindingWhenSupportedCheck: "+str(ldapsChannelBindingWhenSupportedCheck))
                 return "ERROR"
-            #print("For troubleshooting:\nldapsChannelBindingAlwaysCheck - " +str(ldapsChannelBindingAlwaysCheck)+"\nldapsChannelBindingWhenSupportedCheck: "+str(ldapsChannelBindingWhenSupportedCheck))
-                
+                exit()
+
         elif DoesLdapsCompleteHandshake(dc) == False:
             print("      [!] "+dc+ " - cannot complete TLS handshake, cert likely not configured")
     except Exception as e:
