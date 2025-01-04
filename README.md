@@ -2,6 +2,7 @@
 
 Scan internal networks to reveal domain controllers, LDAPS channel binding failures, and other NTLM relay attacks.
 
+![example](./src/example.png)
 
 ## Usage
 
