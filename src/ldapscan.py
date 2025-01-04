@@ -29,14 +29,13 @@ def run_ldaps_noEPA(inputUser, inputPassword, dcTarget):
             dcTarget, use_ssl=True, port=636, get_info=ldap3.ALL, tls=tls)
         ldapConn = ldap3.Connection(
             ldapServer, user=inputUser, password=inputPassword, authentication=ldap3.NTLM)
-        print("made it")
         if not ldapConn.bind():
             if "data 80090346" in str(ldapConn.result):
                 return True #channel binding IS enforced
             elif "data 52e" in str(ldapConn.result):
                 return False #channel binding not enforced
             else:
-                print("UNEXPECTED ERROR: " + str(ldapConn.result))
+                print("UNEXPEC!TED ERROR: " + str(ldapConn.result))
         else:
             #LDAPS bind successful
             return False #because channel binding is not enforced
@@ -70,7 +69,7 @@ async def run_ldaps_withEPA(inputUser, inputPassword, dcTarget, fqdn, timeout):
         elif "data 52e" in str(err):
             return False
         elif err is not None:
-            print("ERROR while connecting to " + dcTarget + ": " + err)
+            print("ERROR while connecting to " + dcTarget + ": " + str(err))
         elif err is None:
             return False
     except Exception as e:
