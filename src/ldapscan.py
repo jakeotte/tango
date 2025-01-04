@@ -35,7 +35,7 @@ def run_ldaps_noEPA(inputUser, inputPassword, dcTarget):
             elif "data 52e" in str(ldapConn.result):
                 return False #channel binding not enforced
             else:
-                print("UNEXPEC!TED ERROR: " + str(ldapConn.result))
+                pass
         else:
             #LDAPS bind successful
             return False #because channel binding is not enforced
