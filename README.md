@@ -22,3 +22,7 @@ targets:
   -rf subnets.txt   Subnet ranges file (10.10.10.0/24, 10.10.11.0/24, etc.)
   -tf hosts.txt     Newline-delimited single target file (10.10.10.10, 10.10.10.11, etc.)
 ```
+
+## Credits
+
+The LDAPS channel binding check is taken from zyn3rgy's awesome tool [LdapRelayScan](https://github.com/zyn3rgy/LdapRelayScan)
