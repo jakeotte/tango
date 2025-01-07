@@ -1,6 +1,10 @@
-# tango - internal network scanner
+# tango - find NTLM relay targets
 
-Scan internal networks to reveal domain controllers, LDAPS channel binding failures, and other NTLM relay attacks.
+Scan internal networks to reveal NTLM relay targets:
+- Domain Controllers lacking LDAPS Channel Binding
+- ADCS relay targets
+- SCCM relay targets
+- MSSQL servers
 
 ![example](./src/example.png)
 
