@@ -146,7 +146,7 @@ def checkIIS(protocol, target, response):
     try:
         server = response.headers['Server']
         if "IIS" in server:
-            print(f"{Style.BRIGHT}{Fore.GREEN}[+]{Style.RESET_ALL} IIS SERVER - {protocol}://{target}")
+            print(f"{Style.BRIGHT}{Fore.GREEN}[+]{Style.RESET_ALL} (IIS) {protocol}://{target}")
             return True
     except:
         return False
@@ -205,7 +205,7 @@ def scanMSSQL(target):
     try:
         result = sock.connect_ex((f"{target}",1433))
         if result == 0:
-            print(f"{Fore.GREEN}{Style.BRIGHT}[+] MSSQL - {Style.RESET_ALL}{target}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}{Style.BRIGHT}[+] (MSSQL) {Style.RESET_ALL}{target}{Style.RESET_ALL}")
         else:
             debug(f"[?] {target}")
     except:
