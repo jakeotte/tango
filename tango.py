@@ -59,6 +59,8 @@ settings_blob = f"""{Style.BRIGHT}{Fore.MAGENTA}[*]{Style.RESET_ALL} Scan settin
 - Thread count : {args.t}
 >> Press Enter to start scan..."""
 
+outputList = []
+
 # getDomainControllers : Retrieve domain controllers via SRV record,
 # verify alive status via ICMP and SMB ports, and finally check signing requirements.
 def getDomainControllers(domain):
@@ -189,15 +191,18 @@ def scanNTLM(target):
         try:
             response = requests.get(f"http://{target}{uri}", headers=headers, timeout=1, verify=False)
             auth_header = response.headers["WWW-Authenticate"]
+            prot_tgt = f"http://{target}"
         except:
             pass
         try:
             response = requests.get(f"https://{target}{uri}", headers=headers, timeout=1, verify=False)
             auth_header = response.headers["WWW-Authenticate"]
+            prot_tgt = f"https://{target}"
         except:
             pass
         if "NTLM" in auth_header:
             print(f"{Style.BRIGHT}{Fore.RED}    [!] NTLM AUTHENTICATION: {Style.RESET_ALL}{target}{uri}{Style.RESET_ALL}")
+            outputList.append(prot_tgt)
 
 def scanMSSQL(target):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -206,6 +211,7 @@ def scanMSSQL(target):
         result = sock.connect_ex((f"{target}",1433))
         if result == 0:
             print(f"{Fore.GREEN}{Style.BRIGHT}[+] (MSSQL) {Style.RESET_ALL}{target}{Style.RESET_ALL}")
+            outputList.append(f"mssql://{target}")
         else:
             debug(f"[?] {target}")
     except:
@@ -243,6 +249,9 @@ def main():
     targets = set(targets)
     with Pool(args.t) as p:
         p.map(scanMSSQL, targets)
+
+    print(f"{Style.BRIGHT}{Fore.MAGENTA}\n[*]{Style.RESET_ALL} Writing {len(outputList)} relay targets to {args.o}...{Style.RESET_ALL}")
+    print(outputList)
 
     return
 
