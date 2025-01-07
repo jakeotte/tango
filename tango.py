@@ -168,11 +168,11 @@ def scanWeb(target):
 
     except requests.exceptions.SSLError:
         # HTTPS with additional SSL error
-        print(f"{Style.BRIGHT}{Fore.YELLOW}[~]{Style.RESET_ALL} {target} is up but has an SSL error.")
+        debug(f"[~] {target} is up but has an SSL error.")
 
     except requests.exceptions.ReadTimeout:
         # Timeouts
-        print(f"{Style.BRIGHT}{Fore.YELLOW}[~]{Style.RESET_ALL} {target} timed out but is likely up.")
+        debug(f"[~] {target} timed out but is likely up.")
     
     except:
         debug(f"[x] {target}")
