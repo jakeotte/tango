@@ -240,6 +240,7 @@ def main():
     print(f"{Style.BRIGHT}{Fore.BLUE}\n***** {Fore.WHITE}MSSQL Relay Targets{Fore.BLUE} ***************************************************{Style.RESET_ALL}")
     targets = getTargetList()
     targets = [target.split(":")[0] for target in targets] # oops
+    targets = set(targets)
     with Pool(args.t) as p:
         p.map(scanMSSQL, targets)
 
