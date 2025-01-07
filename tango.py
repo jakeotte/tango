@@ -146,7 +146,7 @@ def checkIIS(protocol, target, response):
     try:
         server = response.headers['Server']
         if "IIS" in server:
-            print(f"{Style.BRIGHT}{Fore.GREEN}[+]{Style.RESET_ALL} (IIS) {protocol}://{target}")
+            print(f"{Style.BRIGHT}{Fore.GREEN}[+] (IIS){Style.RESET_ALL} {protocol}://{target}")
             return True
     except:
         return False
