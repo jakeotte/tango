@@ -146,14 +146,14 @@ def checkIIS(protocol, target, response):
     try:
         server = response.headers['Server']
         if "IIS" in server:
-            print(f"{Style.BRIGHT}{Fore.GREEN}[+]{Style.RESET_ALL} {Style.RESET_ALL}{protocol}://{target} is an IIS server.")
+            print(f"{Style.BRIGHT}{Fore.GREEN}[+]{Style.RESET_ALL} IIS SERVER - {protocol}://{target}")
             return True
     except:
         return False
 
 # Scan a single target (192.168.20.1:80).
 # Returns the target for alive and None for dead.
-def scanSingle(target):
+def scanWeb(target):
     try:
         # HTTPS for 443s
         if target.split(":")[-1] == "443":
@@ -199,6 +199,18 @@ def scanNTLM(target):
         if "NTLM" in auth_header:
             print(f"{Style.BRIGHT}{Fore.RED}    [!] NTLM AUTHENTICATION ENABLED: {Style.RESET_ALL}{target}{uri}{Style.RESET_ALL}")
 
+def scanMSSQL(target):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(2)
+    try:
+        result = sock.connect_ex((f"{target}",1433))
+        if result == 0:
+            print(f"{Fore.GREEN}[+] MSSQL - {target}{Style.RESET_ALL}")
+        else:
+            debug(f"[?] {target}")
+    except:
+        debug(f"[?] {target}")
+
 # Debug messages
 def debug(msg):
     if args.debug:
@@ -215,14 +227,21 @@ def main():
     dcs = getDomainControllers(args.d)
 
     ### Generate target list from usage mode
-    print(f"{Style.BRIGHT}{Fore.BLUE}\n***** {Fore.WHITE}NTLM Relay Targets{Fore.BLUE} ****************************************************{Style.RESET_ALL}")
+    print(f"{Style.BRIGHT}{Fore.BLUE}\n***** {Fore.WHITE}HTTP Relay Targets{Fore.BLUE} ****************************************************{Style.RESET_ALL}")
     targets = getTargetList()
     debug(f"[?] Targets: {targets}")
     print(f"{Style.BRIGHT}{Fore.MAGENTA}[*]{Style.RESET_ALL} Loaded {len(targets)} targets.")
-    
-    ### Scan targets
+
+    ### Scan web targets
     with Pool(args.t) as p:
-        p.map(scanSingle, targets)
+        p.map(scanWeb, targets)
+
+    ### Scan MSSQL targets
+    print(f"{Style.BRIGHT}{Fore.BLUE}\n***** {Fore.WHITE}MSSQL Relay Targets{Fore.BLUE} ****************************************************{Style.RESET_ALL}")
+    targets = getTargetList()
+    targets = [target.split(":")[0] for target in targets] # oops
+    with Pool(args.t) as p:
+        p.map(scanMSSQL, targets)
 
     return
 
