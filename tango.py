@@ -202,7 +202,6 @@ def scanNTLM(target):
             pass
         if "NTLM" in auth_header:
             print(f"{Style.BRIGHT}{Fore.RED}    [!] NTLM AUTHENTICATION: {Style.RESET_ALL}{prot_tgt}{uri}{Style.RESET_ALL}")
-            globals()["outputList"] += prot_tgt
 
 def scanMSSQL(target):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -210,8 +209,7 @@ def scanMSSQL(target):
     try:
         result = sock.connect_ex((f"{target}",1433))
         if result == 0:
-            print(f"{Fore.GREEN}{Style.BRIGHT}[+] (MSSQL) {Style.RESET_ALL}{target}{Style.RESET_ALL}")
-            globals()["outputList"] += f"mssql://{target}"
+            print(f"{Fore.GREEN}{Style.BRIGHT}[+] (MSSQL) {Style.RESET_ALL}mssql://{target}{Style.RESET_ALL}")
         else:
             debug(f"[?] {target}")
     except:
