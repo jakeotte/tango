@@ -205,7 +205,7 @@ def scanMSSQL(target):
     try:
         result = sock.connect_ex((f"{target}",1433))
         if result == 0:
-            print(f"{Fore.GREEN}[+] MSSQL - {target}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}{Style.BRIGHT}[+] MSSQL - {Style.RESET_ALL}{target}{Style.RESET_ALL}")
         else:
             debug(f"[?] {target}")
     except:
@@ -237,7 +237,7 @@ def main():
         p.map(scanWeb, targets)
 
     ### Scan MSSQL targets
-    print(f"{Style.BRIGHT}{Fore.BLUE}\n***** {Fore.WHITE}MSSQL Relay Targets{Fore.BLUE} ****************************************************{Style.RESET_ALL}")
+    print(f"{Style.BRIGHT}{Fore.BLUE}\n***** {Fore.WHITE}MSSQL Relay Targets{Fore.BLUE} ***************************************************{Style.RESET_ALL}")
     targets = getTargetList()
     targets = [target.split(":")[0] for target in targets] # oops
     with Pool(args.t) as p:
