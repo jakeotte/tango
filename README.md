@@ -1,9 +1,8 @@
 # tango - find NTLM relay targets
 
 Scan internal networks to reveal NTLM relay targets:
-- Domain Controllers lacking LDAPS Channel Binding
-- ADCS relay targets
-- SCCM relay targets
+- LDAPS without Channel binding
+- HTTP/S relays (ADCS/SCCM)
 - MSSQL servers
 
 ![example](./src/example.png)
