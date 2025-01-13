@@ -10,7 +10,7 @@ Scan internal networks to reveal NTLM relay targets:
 ## Usage
 
 ```
-initial access for AD networks
+tango - find NTLM relay targets
 
 options:
   -h, --help        show this help message and exit
