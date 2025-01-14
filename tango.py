@@ -202,8 +202,10 @@ def scanNTLM(target):
             pass
         if "NTLM" in auth_header:
             print(f"{Style.BRIGHT}{Fore.RED}    [!] NTLM AUTHENTICATION: {Style.RESET_ALL}{prot_tgt}{uri}{Style.RESET_ALL}")
+            break
         elif auth_header:
             print(f"{Style.BRIGHT}{Fore.YELLOW}    [~] \"{auth_header}\" AUTHENTICATION: {Style.RESET_ALL}{prot_tgt}{uri}{Style.RESET_ALL}")
+            break
 
 
 def scanMSSQL(target):
