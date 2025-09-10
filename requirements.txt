@@ -1,9 +1,0 @@
-colorama
-lxml
-bs4
-requests
-dnspython
-ping3
-ldap3
-msldap
-pycryptodome
