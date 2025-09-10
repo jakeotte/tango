@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tango"
+version = "0.1.0"
+description = "Find NTLM relay targets in a world of SMB signing"
+readme = "README.md"
+authors = [{name = "Jake Otte", email = "jake.otte@example.com"}]
+requires-python = ">=3.10"
+
+dependencies = [
+    "colorama",
+    "lxml",
+    "beautifulsoup4",  # 'bs4' is provided by this package
+    "requests",
+    "dnspython",
+    "ping3",
+    "ldap3",
+    "msldap",
+    "pycryptodome"
+]
+
+[project.scripts]
+tango = "tango:tango"
