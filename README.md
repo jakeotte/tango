@@ -5,7 +5,7 @@ Scan internal networks to reveal NTLM relay targets:
 - HTTP/S relays (ADCS/SCCM)
 - MSSQL servers
 
-![example](./src/example.png)
+![example](./example.png)
 
 ## Usage
 
